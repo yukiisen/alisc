@@ -1,0 +1,32 @@
+// Templates
+tmpl $adb "adb shell su -c '{}'"
+
+// Container for subcommands
+cmd wifi {
+    desc "Control Device Wifi"
+
+    // subcommand
+    cmd enable {
+        run $adb "swc wifi enable" // expands to: adb shell su -c "swc wifi enable"
+        desc "Enable Wifi"
+    }
+}
+
+// root command
+cmd reboot {
+    args 0 // args have priority over optargs (they must appear first)
+    optargs 1
+    run "adb reboot $1"
+}
+
+cmd build {
+    desc "Build smth"
+    requires bin make
+    requires file "./build/"
+
+    cmd debug: exec "make debug"
+    cmd release: run "make release"
+}
+
+alias build build.release // ./proj build => ./proj build release
+alias wii wifi.enable

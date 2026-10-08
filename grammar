@@ -1,0 +1,19 @@
+program -> (template | command | alias)*;
+
+template -> "tmpl" IDENT STRING;
+
+command -> "cmd" IDENT (
+    ("{" description? shell? spawn? argc? optionalargc? requirement* command* "}") 
+    | 
+    (":" (shell | spawn))
+);
+
+description -> "desc" STRING;
+shell -> "run" IDENT? STRING;
+spawn -> "exec" IDENT? STRING;
+argc -> "args" NUMBER;
+optionalargc -> "optargs" NUMBER;
+requirement -> "requires" ("file" | "env" | "bin") STRING;
+
+alias -> "alias" ident ident;
+ident -> IDENT("."ident)*;
