@@ -60,3 +60,28 @@ pub fn BufferReader(comptime T: type, comptime C: type, comptime eql: *const fn 
         }
     };
 }
+
+pub const LineReader = struct {
+    const Self = @This();
+
+    lines: std.ArrayList([]const u8),
+
+    pub fn init(source: []const u8, gpa: std.mem.Allocator) !Self {
+        var split = std.mem.splitScalar(u8, source, '\n');
+        var lines = std.ArrayList([]const u8).empty;
+
+        while (split.next()) |line| {
+            try lines.append(gpa, line);
+        }
+
+        return .{ .lines = lines };
+    }
+
+    pub fn getLine(self: *const Self, line: u32) []const u8 {
+        return self.lines.items[line - 1];
+    }
+
+    pub fn deinit(self: *Self, gpa: std.mem.Allocator) void {
+        self.lines.deinit(gpa);
+    }
+};

@@ -1,4 +1,4 @@
-program -> (template | command | alias)*;
+program -> template* command* alias*;
 
 template -> "tmpl" IDENT STRING;
 
@@ -10,10 +10,10 @@ command -> "cmd" IDENT (
 
 description -> "desc" STRING;
 shell -> "run" IDENT? STRING;
-spawn -> "exec" IDENT? STRING;
+spawn -> "exec" STRING(,STRING)*;
 argc -> "args" NUMBER;
 optionalargc -> "optargs" NUMBER;
 requirement -> "requires" ("file" | "env" | "bin") STRING;
 
-alias -> "alias" ident ident;
+alias -> "alias" IDENT ident;
 ident -> IDENT("."ident)*;

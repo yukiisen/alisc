@@ -8,7 +8,7 @@ inline fn hash(input: []const u8) u64 {
 
 pub const TokenType = enum {
     // one character tokens
-    Dot, Semicolon, Doubledot, LeftBrace, RightBrace,
+    Dot, Semicolon, LeftBrace, RightBrace, Comma, Colon,
 
     // literals
     Identifier, String, Number,
@@ -45,15 +45,20 @@ pub const Token = struct {
     t_type: TokenType,
     lexeme: []const u8 = &.{},
     line: u32,
+    column: u32,
 
-    pub fn init(t_type: TokenType, line: u32) Token {
-        return .{ .t_type = t_type, .line = line };
+    pub fn init(t_type: TokenType, line: u32, col: u32) Token {
+        return .{ .t_type = t_type, .line = line, .column = col };
     }
 
-    pub fn initLex(t_type: TokenType, lexeme: []const u8, line: u32) Token {
-        return .{ .t_type = t_type, .lexeme = lexeme, .line = line };
+    pub fn initLex(t_type: TokenType, lexeme: []const u8, line: u32, col: u32) Token {
+        return .{ .t_type = t_type, .lexeme = lexeme, .line = line, .column = col };
     }
+};
 
+pub const TokenizeError = error {
+    OutOfMemory,
+    UnexpectedToken,
 };
 
 const Self = @This();
@@ -62,13 +67,14 @@ source: BufferReader(u8),
 tokens: std.ArrayList(Token) = .empty,
 
 start: u32 = 0,
+line_start: u32 = 0,
 line: u32 = 1,
 
 pub fn init(source: []const u8) Self {
     return .{ .source = .init(source) };
 }
 
-pub fn scan(self: *Self, gpa: std.mem.Allocator) ![]const Token {
+pub fn scan(self: *Self, gpa: std.mem.Allocator) TokenizeError![]const Token {
     while (!self.source.isEof()) {
         self.start = self.source.cursor;
 
@@ -77,7 +83,7 @@ pub fn scan(self: *Self, gpa: std.mem.Allocator) ![]const Token {
         }
     }
 
-    try self.tokens.append(gpa, .init(.Eof, self.line));
+    try self.tokens.append(gpa, .init(.Eof, self.line, 0));
 
     return self.tokens.items;
 }
@@ -90,20 +96,22 @@ fn isAlpha(c: u8) bool {
     return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or c == '_' or c == '$';
 }
 
-pub fn scanToken(self: *Self) !?Token {
+pub fn scanToken(self: *Self) TokenizeError!?Token {
     const c = self.source.read() orelse return null;
 
     switch (c) {
-        ':' => return .init(.Doubledot,  self.line),
-        ';' => return .init(.Semicolon,  self.line),
-        '.' => return .init(.Dot,        self.line),
-        '{' => return .init(.LeftBrace,  self.line),
-        '}' => return .init(.RightBrace, self.line),
+        ':' => return .init(.Colon,      self.line, self.start - self.line_start),
+        ',' => return .init(.Comma,      self.line, self.start - self.line_start),
+        ';' => return .init(.Semicolon,  self.line, self.start - self.line_start),
+        '.' => return .init(.Dot,        self.line, self.start - self.line_start),
+        '{' => return .init(.LeftBrace,  self.line, self.start - self.line_start),
+        '}' => return .init(.RightBrace, self.line, self.start - self.line_start),
 
         '/' => {
             if (self.source.match('/')) {
                 self.source.next('\n');
                 self.line += 1;
+                self.line_start = self.source.cursor;
                 return null;
             }
 
@@ -112,13 +120,14 @@ pub fn scanToken(self: *Self) !?Token {
 
         '"' => {
             self.source.next('"');
-            return .initLex(.String, self.source.slice(self.start), self.line);
+            return .initLex(.String, self.source.slice(self.start)[1..self.source.cursor - self.start - 1], self.line, self.start - self.line_start);
         },
 
         ' ', '\r', '\t' => return null,
 
         '\n' => {
             self.line += 1;
+            self.line_start = self.source.cursor;
             return null;
         },
 
@@ -127,7 +136,7 @@ pub fn scanToken(self: *Self) !?Token {
 
     if (isDigit(c)) {
         while (isDigit(self.source.peek() orelse 0)) _ = self.source.read();
-        return .initLex(.Number, self.source.slice(self.start), self.line);
+        return .initLex(.Number, self.source.slice(self.start), self.line, self.start - self.line_start);
     }
 
     if (isAlpha(c)) {
@@ -137,7 +146,7 @@ pub fn scanToken(self: *Self) !?Token {
         ) _ = self.source.read();
 
         const ident = self.source.slice(self.start);
-        return .initLex(.fromString(ident), ident, self.line);
+        return .initLex(.fromString(ident), ident, self.line, self.start - self.line_start);
     }
 
     return error.UnexpectedToken;
