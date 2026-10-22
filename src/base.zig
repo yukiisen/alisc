@@ -2,13 +2,10 @@ const std = @import("std");
 
 const cwd = std.Io.Dir.cwd;
 
-const Scanner = @import("scanner.zig");
-const Parser = @import("parser.zig");
-
-const repr = @import("repr.zig");
+const repr = @import("./format/repr.zig");
 
 const compile = @import("compiler.zig").compile;
-const embed = @import("embed.zig");
+const embed = @import("./utils/embed.zig");
 
 pub fn main(init: std.process.Init) !void {
     const gpa = init.arena.allocator();

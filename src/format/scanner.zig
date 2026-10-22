@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const BufferReader = @import("bufreader.zig").BasicBufferReader;
+const BufferReader = @import("../utils/bufreader.zig").BasicBufferReader;
 
 inline fn hash(input: []const u8) u64 {
     return std.hash.Wyhash.hash(0, input);

@@ -65,6 +65,7 @@ pub const LineReader = struct {
     const Self = @This();
 
     lines: std.ArrayList([]const u8),
+    nlines: usize,
 
     pub fn init(source: []const u8, gpa: std.mem.Allocator) !Self {
         var split = std.mem.splitScalar(u8, source, '\n');
@@ -74,7 +75,7 @@ pub const LineReader = struct {
             try lines.append(gpa, line);
         }
 
-        return .{ .lines = lines };
+        return .{ .lines = lines, .nlines = lines.items.len };
     }
 
     pub fn getLine(self: *const Self, line: u32) []const u8 {

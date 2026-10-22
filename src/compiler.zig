@@ -1,10 +1,10 @@
 const std = @import("std");
 
-const Scanner = @import("scanner.zig");
-const Parser = @import("parser.zig");
+const Scanner = @import("./format/scanner.zig");
+const Parser = @import("./format/parser.zig");
 
-const buf = @import("bufreader.zig");
-const repr = @import("repr.zig");
+const buf = @import("./utils/bufreader.zig");
+const repr = @import("./format/repr.zig");
 
 pub fn compile(source: []const u8, gpa: std.mem.Allocator) !repr.Program {
     const reader = try buf.LineReader.init(source, gpa);
@@ -16,6 +16,7 @@ pub fn compile(source: []const u8, gpa: std.mem.Allocator) !repr.Program {
             if (scanner.line > 2) std.log.err("  {s}", .{ reader.getLine(scanner.line - 2) });
             if (scanner.line > 1) std.log.err("  {s}", .{ reader.getLine(scanner.line - 1) });
             std.log.err("> {s}", .{ reader.getLine(scanner.line) });
+            if (scanner.line + 1 < reader.nlines) std.log.err("  {s}", .{ reader.getLine(scanner.line + 1) });
 
             std.process.exit(1);
         }
@@ -33,6 +34,7 @@ pub fn compile(source: []const u8, gpa: std.mem.Allocator) !repr.Program {
         if (token.line > 2) std.log.err("  {s}", .{ reader.getLine(token.line - 2) });
         if (token.line > 1) std.log.err("  {s}", .{ reader.getLine(token.line - 1) });
         std.log.err("> {s}", .{ reader.getLine(token.line) });
+        if (token.line + 1 < reader.nlines) std.log.err("  {s}", .{ reader.getLine(token.line + 1) });
 
         std.process.exit(1);
     };

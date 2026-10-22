@@ -1,7 +1,7 @@
 const std = @import("std");
 const Token = @import("scanner.zig").Token;
 const TokenType = @import("scanner.zig").TokenType;
-const BufferReader = @import("bufreader.zig").BufferReader;
+const BufferReader = @import("../utils/bufreader.zig").BufferReader;
 
 const repr = @import("repr.zig");
 
