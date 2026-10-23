@@ -1,32 +1,43 @@
-// Templates
-tmpl adb "adb shell su -c '{}'"
+name "hentai"
+version "1.0"
+author "yukiisen"
 
-// Container for subcommands
-cmd wifi {
-    desc "Control Device Wifi"
+// --- templates ---
+tmpl BUILD "bash {}"
 
-    // subcommand
-    cmd enable {
-        run adb "swc wifi enable" // expands to: adb shell su -c "swc wifi enable"
-        desc "Enable Wifi"
+// --- commands ---
+
+// run STRING (no template) + args + optargs + all three requirement kinds
+cmd hello {
+    desc "Say hello"
+    run "echo hello"
+    args 0
+    optargs 0
+    requires env "USER"
+    requires bin "echo"
+    requires file ".env"
+}
+
+// shortcut with run, no template
+cmd pwd : run "pwd"
+
+// shortcut with exec, multi-arg
+cmd ls : exec "ls", "-la"
+
+// run IDENT STRING (template reference) + nested subcommands
+cmd build {
+    desc "Build the project"
+    run BUILD "scripts/build.sh"
+    optargs 2
+    requires bin "bash"
+    requires file "Makefile"
+
+    cmd clean {
+        desc "Clean artifacts"
+        exec "rm", "-rf", "build"
     }
 }
 
-// root command
-cmd reboot {
-    args 0 // args have priority over optargs (they must appear first)
-    optargs 2
-    run "adb reboot $1"
-}
-
-cmd build {
-    desc "Build smth"
-    requires bin "make"
-    requires file "./build/"
-
-    cmd debug: exec "make", "debug"
-    cmd release: run "make release"
-}
-
-alias build build.release // ./proj build => ./proj build release
-alias wii wifi.enable
+alias h hello
+alias p pwd
+alias c build.clean

@@ -4,9 +4,16 @@ const HashMap = std.StringHashMapUnmanaged;
 
 pub const Program = struct {
     gpa: std.mem.Allocator,
+    meta: Metadata = .{},
     templates: HashMap(Template) = .empty,
     aliases: HashMap(Alias) = .empty,
     commands: HashMap(Command) = .empty,
+};
+
+pub const Metadata = struct {
+    name: []const u8 = &.{},
+    version: []const u8 = "0.1.0",
+    author: []const u8 = &.{},
 };
 
 pub const Template = struct {
@@ -21,8 +28,8 @@ pub const Alias = struct {
 
 pub const Command = struct {
     name: []const u8,
-    argc: u16 = 0,
-    optargs: u16 = 0,
+    argc: ?u16 = null,
+    optargs: ?u16 = null,
     cmd: ?Spawner = null,
     description: ?[]const u8 = null,
     requirements: std.ArrayList(Requirement) = .empty,

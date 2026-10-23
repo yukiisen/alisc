@@ -45,6 +45,9 @@ pub fn parse(self: *Self, gpa: std.mem.Allocator) ParseError!repr.Program {
                 const a = try self.alias();
                 try self.program.aliases.put(gpa, a.source, a);
             },
+            .Name => { self.program.meta.name = (try self.next(.String)).lexeme; },
+            .Version => { self.program.meta.version= (try self.next(.String)).lexeme; },
+            .Author => { self.program.meta.author = (try self.next(.String)).lexeme; },
             else => return error.UnexpectedToken,
         }
     }

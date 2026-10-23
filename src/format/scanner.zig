@@ -20,6 +20,8 @@ pub const TokenType = enum {
     Args, OptArgs, 
     Alias, 
 
+    Name, Version, Author, 
+
     Eof,
 
     pub fn fromString(str: []const u8) TokenType {
@@ -36,6 +38,9 @@ pub const TokenType = enum {
             inline hash("args") => .Args,
             inline hash("optargs") => .OptArgs,
             inline hash("alias") => .Alias,
+            inline hash("name") => .Name,
+            inline hash("version") => .Version,
+            inline hash("author") => .Author,
             else => .Identifier,
         };
     }

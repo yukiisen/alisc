@@ -1,9 +1,12 @@
 program -> template* command* alias*;
+program -> (program | meta)*;
+
+meta -> ("name" | "author" | "version") STRING;
 
 template -> "tmpl" IDENT STRING;
 
 command -> "cmd" IDENT (
-    ("{" description? shell? spawn? argc? optionalargc? requirement* command* "}") 
+    ("{" description? (shell | spawn)? argc? optionalargc? requirement* command* "}") 
     | 
     (":" (shell | spawn))
 );
