@@ -13,16 +13,18 @@ const Ctx = @import("argparse.zig").Ctx;
 pub fn main(init: std.process.Init) !void {
     const gpa = init.arena.allocator();
 
-    var source: []u8 = &.{};
+    var source: []const u8 = &.{};
 
     if (@import("builtin").mode == .Debug) {
         const file = try cwd().openFile(init.io, "build.alisc", .{});
         defer file.close(init.io);
 
         const stat = try file.stat(init.io);
-        source = try gpa.alloc(u8, stat.size);
+        const src = try gpa.alloc(u8, stat.size);
 
         _ = try file.readPositionalAll(init.io, source, 0);
+
+        source = src;
     } else {
         source = try embed.readSlitch(init.io, gpa);
     }
