@@ -1,5 +1,4 @@
-program -> template* command* alias*;
-program -> (program | meta)*;
+program -> (template | meta)* (command | meta)* (meta | alias)*;
 
 meta -> ("name" | "author" | "version") STRING;
 
