@@ -22,7 +22,7 @@ pub fn main(init: std.process.Init) !void {
         const stat = try file.stat(init.io);
         const src = try gpa.alloc(u8, stat.size);
 
-        _ = try file.readPositionalAll(init.io, source, 0);
+        _ = try file.readPositionalAll(init.io, src, 0);
 
         source = src;
     } else {
